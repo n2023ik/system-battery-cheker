@@ -38,8 +38,3 @@ The app uses `navigator.getBattery()` to fetch battery information and dynamical
 
 If the user's browser doesn't support the Battery Status API, a fallback message is shown.
 
-## 🛠 Setup Locally
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/system-battery-checker.git
