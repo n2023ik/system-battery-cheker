@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Battery Checker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .battery-status {
+            margin: 1.5rem 0;
+        }
+        
+        .battery-level {
+            height: 30px;
+            background-color: #ecf0f1;
+            border-radius: 15px;
+            margin: 1rem 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .battery-fill {
+            height: 100%;
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            border-radius: 15px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .battery-percent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .charging-status {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+        
+        .charging {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .not-charging {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+        }
+        
+        .warning {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #f39c12;
+            color: white;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .info {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .battery-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🔋</div>
+        <h1>System Battery Checker</h1>
+        
+        <div id="battery-info">
+            <div class="battery-icon" id="battery-icon">?</div>
+            
+            <div class="battery-status">
+                <p>Current Battery Level:</p>
+                <div class="battery-level">
+                    <div class="battery-fill" id="battery-fill"></div>
+                    <div class="battery-percent" id="battery-percent">0%</div>
+                </div>
+            </div>
+            
+            <div class="charging-status" id="charging-status">
+                Checking charging status...
+            </div>
+            
+            <div class="warning" id="low-battery-warning">
+                ⚠️ Warning: Your battery is getting low!
+            </div>
+            
+            <div class="info" id="discharge-time">
+                Estimating remaining time...
+            </div>
+        </div>
+        
+        <div id="unsupported" class="error" style="display: none;">
+            ⚠️ Sorry, your browser doesn't support the Battery Status API.<br>
+            Try opening this page in Chrome or Edge on a laptop or mobile device.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const batteryFill = document.getElementById('battery-fill');
+            const batteryPercent = document.getElementById('battery-percent');
+            const chargingStatus = document.getElementById('charging-status');
+            const lowBatteryWarning = document.getElementById('low-battery-warning');
+            const dischargeTime = document.getElementById('discharge-time');
+            const batteryIcon = document.getElementById('battery-icon');
+            const unsupportedMessage = document.getElementById('unsupported');
+            const batteryInfo = document.getElementById('battery-info');
+            
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(function(battery) {
+                    // Update all battery information initially
+                    updateAllBatteryInfo(battery);
+                    
+                    // Set up event listeners for changes
+                    battery.addEventListener('levelchange', () => updateBatteryLevel(battery));
+                    battery.addEventListener('chargingchange', () => updateChargingStatus(battery));
+                    battery.addEventListener('chargingtimechange', () => updateDischargeTime(battery));
+                    battery.addEventListener('dischargingtimechange', () => updateDischargeTime(battery));
+                });
+            } else {
+                batteryInfo.style.display = 'none';
+                unsupportedMessage.style.display = 'block';
+            }
+            
+            function updateAllBatteryInfo(battery) {
+                updateBatteryLevel(battery);
+                updateChargingStatus(battery);
+                updateDischargeTime(battery);
+            }
+            
+            function updateBatteryLevel(battery) {
+                const level = battery.level * 100;
+                batteryFill.style.width = level + '%';
+                batteryPercent.textContent = Math.round(level) + '%';
+                
+                // Update battery icon
+                updateBatteryIcon(level, battery.charging);
+                
+                // Change color and show warnings based on battery level
+                if (level < 15) {
+                    batteryFill.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
+                    lowBatteryWarning.style.display = 'block';
+                } else if (level < 30) {
+                    batteryFill.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
+                    lowBatteryWarning.style.display = 'block';
+                } else if (level < 50) {
+                    batteryFill.style.background = 'linear-gradient(to right, #f39c12, #e67e22)';
+                    lowBatteryWarning.style.display = 'none';
+                } else {
+                    batteryFill.style.background = 'linear-gradient(to right, #2ecc71, #27ae60)';
+                    lowBatteryWarning.style.display = 'none';
+                }
+            }
+            
+            function updateChargingStatus(battery) {
+                if (battery.charging) {
+                    chargingStatus.textContent = '🔌 Connected to power source';
+                    chargingStatus.className = 'charging-status charging';
+                } else {
+                    chargingStatus.textContent = '🔋 Running on battery power';
+                    chargingStatus.className = 'charging-status not-charging';
+                }
+                updateBatteryIcon(battery.level * 100, battery.charging);
+            }
+            
+            function updateDischargeTime(battery) {
+                if (battery.charging) {
+                    if (battery.chargingTime === Infinity) {
+                        dischargeTime.textContent = "Calculating time until full charge...";
+                    } else if (battery.chargingTime > 0) {
+                        const hours = Math.floor(battery.chargingTime / 3600);
+                        const minutes = Math.floor((battery.chargingTime % 3600) / 60);
+                        dischargeTime.textContent = `⏳ Time until full: ~${hours}h ${minutes}m`;
+                    } else {
+                        dischargeTime.textContent = "Connected to power source";
+                    }
+                } else {
+                    if (battery.dischargingTime === Infinity) {
+                        dischargeTime.textContent = "Calculating remaining battery time...";
+                    } else if (battery.dischargingTime > 0) {
+                        const hours = Math.floor(battery.dischargingTime / 3600);
+                        const minutes = Math.floor((battery.dischargingTime % 3600) / 60);
+                        dischargeTime.textContent = `⏳ Remaining time: ~${hours}h ${minutes}m`;
+                    } else {
+                        dischargeTime.textContent = "Calculating battery time...";
+                    }
+                }
+            }
+            
+            function updateBatteryIcon(level, isCharging) {
+                let icon = '🔋'; // Default battery icon
+                
+                if (isCharging) {
+                    icon = '⚡';
+                } else if (level >= 90) {
+                    icon = '🔋';
+                } else if (level >= 70) {
+                    icon = '🔋';
+                } else if (level >= 50) {
+                    icon = '🔋';
+                } else if (level >= 30) {
+                    icon = '🔋';
+                } else if (level >= 15) {
+                    icon = '🔋';
+                } else {
+                    icon = '🪫';
+                }
+                
+                batteryIcon.textContent = icon;
+            }
+        });
+    </script>
+</body>
+</html>
