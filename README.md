@@ -12,12 +12,12 @@ A simple, elegant, and responsive web app to monitor your device's battery statu
 
 ## 🚀 Live Demo
 
-[Click to try it out!](https://your-deployment-link.com)  
+[Click to try it out!](https://n2023ik.github.io/system-battery-cheker/)  
 *(Replace with your live deployment URL if available)*
 
 ## 📸 Screenshots
 
-![Screenshot](https://your-screenshot-url.com)  
+![Screenshot](https://github.com/n2023ik/system-battery-cheker/blob/main/batery.png?raw=true)  
 *(Add a screenshot of your web page here)*
 
 ## 📦 Tech Stack
